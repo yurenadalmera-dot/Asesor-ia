@@ -474,8 +474,8 @@ tr:hover .row-actions{opacity:1}
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem">
         <div class="card" style="padding:1.25rem;cursor:pointer">
           <div style="font-size:1.5rem;margin-bottom:0.5rem">🍔</div>
-          <div style="font-weight:600;margin-bottom:0.2rem">Kapricho Burguer SCP</div>
-          <div style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--text3);margin-bottom:0.6rem">J42909390</div>
+          <div style="font-weight:600;margin-bottom:0.2rem">Cliente demo</div>
+          <div style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--text3);margin-bottom:0.6rem">B35998765</div>
           <span class="badge green">Al día</span>
         </div>
         <div class="card" style="padding:1.25rem;cursor:pointer">
@@ -498,7 +498,7 @@ tr:hover .row-actions{opacity:1}
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem">
         <div class="card" style="padding:1.25rem">
           <div style="font-size:1.5rem;margin-bottom:0.5rem">📊</div>
-          <div style="font-weight:600;margin-bottom:0.15rem">Kapricho Burguer SCP</div>
+          <div style="font-weight:600;margin-bottom:0.15rem">Cliente demo</div>
           <div style="font-size:0.75rem;color:var(--text3);margin-bottom:1rem">Q2 2024 · 8 documentos</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;padding:0.75rem 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:0.75rem">
             <div><div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase">Mod. 420</div><div style="font-family:'DM Mono',monospace;font-size:0.88rem;color:var(--red);font-weight:500">410,83€</div></div>
@@ -665,6 +665,7 @@ tr:hover .row-actions{opacity:1}
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ══ ESTADO ════════════════════════════════════════════════════════════
 let trialState = 'active'; // 'active' | 'warning' | 'expired'
@@ -677,17 +678,113 @@ const TRIAL_CONFIG = {
 };
 
 // ══ DATOS ═════════════════════════════════════════════════════════════
-const DOCS = [
-  {id:1,num:'000640',     fecha:'20/04/2024',entidad:'Comercial EDAR',      nif:'Y7593556M',tipo:'gasto',   tipo_label:'📥 Gasto',   cliente:'Kapricho',concepto:'Envases take away 780ml + Servilletas',       base:148.20,igic_pct:'3%',   igic:4.45, retencion:0,  total:152.65,pgc:'602',forma_pago:'Contado'},
-  {id:2,num:'ARR-2024-04',fecha:'01/04/2024',entidad:'Inmob. Costa Sur',    nif:'B38445566',tipo:'alquiler',tipo_label:'🏠 Alquiler',cliente:'Kapricho',concepto:'Alquiler local comercial — abril 2024',         base:800.00,igic_pct:'7%',   igic:56.00,retencion:152,total:704.00,pgc:'621',forma_pago:'Transferencia'},
-  {id:3,num:'KAP-2024-041',fecha:'05/04/2024',entidad:'Turista Directo SL', nif:'B38112233',tipo:'ingreso', tipo_label:'📤 Ingreso',  cliente:'Kapricho',concepto:'Restauración — menú degustación x12',          base:480.00,igic_pct:'7%',   igic:33.60,retencion:0,  total:513.60,pgc:'705',forma_pago:'TPV'},
-  {id:4,num:'KAP-2024-042',fecha:'12/04/2024',entidad:'Hotel Morro Beach',  nif:'A28993311',tipo:'ingreso', tipo_label:'📤 Ingreso',  cliente:'Kapricho',concepto:'Catering evento corporativo 40 pax',           base:860.00,igic_pct:'7%',   igic:60.20,retencion:0,  total:920.20,pgc:'705',forma_pago:'Transferencia'},
-  {id:5,num:'FVR2402434',  fecha:'27/03/2024',entidad:'QMV Quimiventura',   nif:'B35621440',tipo:'gasto',   tipo_label:'📥 Gasto',   cliente:'Kapricho',concepto:'Productos limpieza e higiene',                  base:135.49,igic_pct:'3%/7%',igic:4.72, retencion:0,  total:140.21,pgc:'629',forma_pago:'Datáfono'},
-  {id:6,num:'22FE02705',   fecha:'18/10/2022',entidad:'Ecofuer',            nif:'78525623N',tipo:'gasto',   tipo_label:'📥 Gasto',   cliente:'Kapricho',concepto:'Envase cartón burger grande 150x150x70mm',      base:64.50, igic_pct:'Exento',igic:0,    retencion:0,  total:64.50, pgc:'602',forma_pago:'Transferencia'},
-  {id:7,num:'Marzo 2024',  fecha:'31/03/2024',entidad:'Ana Pérez Ramos',    nif:'45112233T',tipo:'nomina',  tipo_label:'👤 Nómina',  cliente:'Kapricho',concepto:'Sueldo marzo · IRPF 12% · SS empresa 480€',     base:1600.00,igic_pct:'—',  igic:0,    retencion:192,total:2080.00,pgc:'640',forma_pago:'Transferencia'},
-  {id:8,num:'MK-20240315', fecha:'15/03/2024',entidad:'Makro España SA',    nif:'A28164754',tipo:'gasto',   tipo_label:'📥 Gasto',   cliente:'El Charco',concepto:'Alimentación y bebidas',                       base:320.00,igic_pct:'7%',   igic:22.40,retencion:0,  total:342.40,pgc:'600',forma_pago:'Tarjeta'},
-];
-let docsData = JSON.parse(JSON.stringify(DOCS));
+// ══ CONEXIÓN SUPABASE ═════════════════════════════════════════════════
+const SUPABASE_URL = 'https://dlgektvoodffhjlnpggj.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_p2ZkOWaoebz5M3yx2rpIRg_fomai3hp';
+const ORG_ID       = 'ef54c205-14da-410b-b474-ab9108f92956';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let DOCS = [];
+let CLIENTES = [];
+
+const TIPO_LABEL = {gasto:'📥 Gasto', ingreso:'📤 Ingreso', alquiler:'🏠 Alquiler', nomina:'👤 Nómina'};
+const LABEL_TIPO = {'📥 Gasto':'gasto','📤 Ingreso':'ingreso','🏠 Alquiler':'alquiler','👤 Nómina':'nomina'};
+
+function fechaES(iso){ if(!iso) return ''; const p=String(iso).slice(0,10).split('-'); return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:iso; }
+function fechaISO(es){ if(!es) return null; const m=String(es).match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/); return m?`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`:es; }
+
+// Fila de Supabase → objeto que entiende la tabla
+function mapDesdeDB(r){
+  const esNomina = r.tipo_doc === 'nomina';
+  const tipo = esNomina ? 'nomina' : (r.es_alquiler ? 'alquiler' : (r.tipo || 'gasto'));
+  const cli = CLIENTES.find(c => c.id === r.cliente_id);
+  return {
+    id: r.id,
+    num: r.num_referencia || r.periodo || '',
+    fecha: fechaES(r.fecha),
+    entidad: esNomina ? (r.empleado||'') : (r.tipo==='ingreso' ? (r.destinatario||'') : (r.emisor||'')),
+    nif: esNomina ? (r.nif_empleado||'') : (r.tipo==='ingreso' ? (r.nif_destinatario||'') : (r.nif_emisor||'')),
+    tipo: tipo,
+    tipo_label: TIPO_LABEL[tipo] || '📥 Gasto',
+    cliente: cli ? cli.nombre : '—',
+    cliente_id: r.cliente_id,
+    concepto: r.concepto || '',
+    base: Number(r.base ?? r.salario_bruto ?? 0),
+    igic_pct: r.igic_pct || '—',
+    igic: Number(r.igic ?? 0),
+    retencion: Number(r.retencion ?? r.irpf_retenido ?? 0),
+    total: Number(r.total ?? r.coste_total_empresa ?? 0),
+    pgc: r.pgc_cuenta || '',
+    forma_pago: r.forma_pago || '',
+    estado: r.estado,
+  };
+}
+
+// Objeto de la tabla → columnas de Supabase
+function mapHaciaDB(d){
+  const esNomina = d.tipo === 'nomina';
+  const tipo = d.tipo === 'alquiler' ? 'gasto' : d.tipo;
+  const campos = {
+    num_referencia: d.num,
+    fecha: fechaISO(d.fecha),
+    concepto: d.concepto,
+    base: d.base,
+    igic_pct: d.igic_pct,
+    igic: d.igic,
+    total: d.total,
+    pgc_cuenta: d.pgc,
+    forma_pago: d.forma_pago,
+    es_alquiler: d.tipo === 'alquiler',
+    tipo: esNomina ? 'gasto' : tipo,
+  };
+  if (esNomina) { campos.empleado = d.entidad; campos.nif_empleado = d.nif; campos.irpf_retenido = d.retencion; campos.salario_bruto = d.base; }
+  else if (tipo === 'ingreso') { campos.destinatario = d.entidad; campos.nif_destinatario = d.nif; campos.retencion = d.retencion; }
+  else { campos.emisor = d.entidad; campos.nif_emisor = d.nif; campos.retencion = d.retencion; }
+  return campos;
+}
+
+async function cargarClientes(){
+  const {data, error} = await sb.from('clientes').select('id,nombre,nif,emoji,color').eq('activo', true).order('nombre');
+  if (error) { console.error('clientes:', error); return []; }
+  CLIENTES = data || [];
+  return CLIENTES;
+}
+
+async function cargarDocumentos(){
+  const {data, error} = await sb.from('documentos').select('*').order('fecha', {ascending:false, nullsFirst:false});
+  if (error) { console.error('documentos:', error); showToast('⚠️ No se pudieron cargar los documentos','amber'); return; }
+  DOCS = (data || []).map(mapDesdeDB);
+  docsData = JSON.parse(JSON.stringify(DOCS));
+}
+
+async function cargarEstadoTrial(){
+  const {data, error} = await sb.from('organizaciones').select('plan,estado,trial_fin').eq('id', ORG_ID).single();
+  if (error || !data) return;
+  if (data.plan !== 'trial') { trialState='active'; daysLeft=999; return; }
+  const dias = Math.max(0, Math.ceil((new Date(data.trial_fin) - new Date())/86400000));
+  daysLeft = dias;
+  trialState = dias === 0 ? 'expired' : (dias <= 7 ? 'warning' : 'active');
+  TRIAL_CONFIG.active.days  = dias;
+  TRIAL_CONFIG.active.pill  = `🟢 Prueba · ${dias} días`;
+  TRIAL_CONFIG.active.bannerMsg = `Prueba gratuita activa · <strong>${dias} días restantes</strong> · Sin límites · Sin tarjeta requerida`;
+  TRIAL_CONFIG.warning.days = dias;
+  TRIAL_CONFIG.warning.pill = `⚠️ Prueba · ${dias} días`;
+  TRIAL_CONFIG.warning.bannerMsg = `Tu prueba gratuita termina en <strong>${dias} día${dias===1?'':'s'}</strong> · Elige un plan para no perder el acceso`;
+}
+
+async function guardarEnSupabase(doc){
+  const {error} = await sb.from('documentos').update(mapHaciaDB(doc)).eq('id', doc.id);
+  if (error) { console.error('guardar:', error); showToast('⚠️ Error al guardar','amber'); return false; }
+  return true;
+}
+
+async function borrarEnSupabase(id){
+  const {error} = await sb.from('documentos').delete().eq('id', id);
+  if (error) { console.error('borrar:', error); showToast('⚠️ Error al eliminar','amber'); return false; }
+  return true;
+}
+
+let docsData = [];
 let changeHistory = [];
 let pendingChanges = new Set();
 let currentFilter = 'todos';
@@ -829,11 +926,11 @@ function actualizarBotonesAccion(docId){
 }
 
 // ══ GUARDAR / DESCARTAR ═══════════════════════════════════════════════
-function guardarFila(id){pendingChanges.delete(id);const r=document.getElementById('row-'+id);if(r)r.className='';actualizarBotonesAccion(id);actualizarContadores();showToast('✓ Guardado','green');}
+async function guardarFila(id){const _d=docsData.find(x=>x.id===id);if(_d){const ok=await guardarEnSupabase(_d);if(!ok)return;}pendingChanges.delete(id);const r=document.getElementById('row-'+id);if(r)r.className='';actualizarBotonesAccion(id);actualizarContadores();showToast('✓ Guardado','green');}
 function descartarFila(id){const orig=DOCS.find(d=>d.id===id);const idx=docsData.findIndex(d=>d.id===id);docsData[idx]=JSON.parse(JSON.stringify(orig));pendingChanges.delete(id);renderTabla('dash-table-container','todos',4);renderTabla('docs-table-container',currentFilter);actualizarContadores();showToast('Cambios descartados','amber');}
-function guardarTodosCambios(){const n=pendingChanges.size;pendingChanges.clear();renderTabla('dash-table-container','todos',4);renderTabla('docs-table-container',currentFilter);actualizarContadores();showToast(`✓ ${n} documento${n>1?'s':''} guardado${n>1?'s':''}','green`);}
+async function guardarTodosCambios(){const n=pendingChanges.size;for(const _id of Array.from(pendingChanges)){const _d=docsData.find(x=>x.id===_id);if(_d)await guardarEnSupabase(_d);}pendingChanges.clear();renderTabla('dash-table-container','todos',4);renderTabla('docs-table-container',currentFilter);actualizarContadores();showToast(`✓ ${n} documento${n>1?'s':''} guardado${n>1?'s':''}','green`);}
 function descartarCambios(){pendingChanges.forEach(id=>{const orig=DOCS.find(d=>d.id===id);const idx=docsData.findIndex(d=>d.id===id);docsData[idx]=JSON.parse(JSON.stringify(orig));});pendingChanges.clear();renderTabla('dash-table-container','todos',4);renderTabla('docs-table-container',currentFilter);actualizarContadores();showToast('Cambios descartados','amber');}
-function eliminarFila(id){if(!confirm('¿Eliminar este documento?'))return;docsData=docsData.filter(d=>d.id!==id);pendingChanges.delete(id);renderTabla('dash-table-container','todos',4);renderTabla('docs-table-container',currentFilter);actualizarContadores();showToast('Documento eliminado','amber');}
+async function eliminarFila(id){if(!confirm('¿Eliminar este documento?'))return;const ok=await borrarEnSupabase(id);if(!ok)return;docsData=docsData.filter(d=>d.id!==id);DOCS=DOCS.filter(d=>d.id!==id);pendingChanges.delete(id);renderTabla('dash-table-container','todos',4);renderTabla('docs-table-container',currentFilter);actualizarContadores();showToast('Documento eliminado','amber');}
 
 function actualizarContadores(){
   const n=pendingChanges.size;
@@ -990,14 +1087,27 @@ function navTo(page,navEl){
   if(page==='plan')renderTrialUI();
 }
 
-function doLogin(state){
-  trialState=state;
-  daysLeft={active:22,warning:5,expired:0}[state];
+async function doLogin(state){
   document.getElementById('auth-screen').style.display='none';
   document.getElementById('app-screen').style.display='block';
+  showToast('Cargando datos…','blue');
+  await cargarEstadoTrial();
+  await cargarClientes();
+  await cargarDocumentos();
   renderTrialUI();
   renderTabla('dash-table-container','todos',4);
   renderTabla('docs-table-container','todos');
+  actualizarContadores();
+  showToast(`✓ ${DOCS.length} documento${DOCS.length===1?'':'s'} · ${CLIENTES.length} cliente${CLIENTES.length===1?'':'s'}`,'green');
+}
+
+async function recargarDatos(){
+  await cargarClientes();
+  await cargarDocumentos();
+  renderTabla('dash-table-container','todos',4);
+  renderTabla('docs-table-container',currentFilter);
+  actualizarContadores();
+  showToast('✓ Datos actualizados','green');
 }
 
 function doLogout(){document.getElementById('app-screen').style.display='none';document.getElementById('auth-screen').style.display='flex';}
