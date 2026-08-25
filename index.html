@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AsesorIA · Gestión Fiscal Inteligente</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --white:#FFFFFF;--off:#F7F8FA;--border:#E4E7EC;--border2:#C8CDD8;
+  --text:#0F1623;--text2:#4B5568;--text3:#9AA3B4;
+  --blue:#1B3FAB;--blue-lt:#EEF2FF;--blue-md:#3B5BDB;
+  --green:#0D7A4E;--green-lt:#ECFDF5;
+  --red:#C0392B;--red-lt:#FEF2F2;
+  --amber:#92400E;--amber-lt:#FFFBEB;
+  --purple:#5B21B6;--purple-lt:#F5F3FF;
+  --edit:#FFF9C4;--edit-border:#F59E0B;
+  --shadow:0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md:0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg:0 8px 24px rgba(0,0,0,0.10);
+  --radius:8px;--sidebar:240px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh}
+
+/* AUTH */
+#auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--white);background-image:radial-gradient(circle at 20% 50%,#EEF2FF 0%,transparent 60%),radial-gradient(circle at 80% 20%,#F0FDF4 0%,transparent 50%)}
+.auth-card{width:100%;max-width:420px;padding:2.5rem;background:var(--white);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-lg)}
+.auth-logo{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:var(--blue);margin-bottom:0.25rem;letter-spacing:-0.02em}
+.auth-logo span{color:var(--text)}
+.auth-tagline{font-size:0.82rem;color:var(--text3);margin-bottom:2rem}
+.form-group{margin-bottom:1rem}
+.form-label{display:block;font-size:0.78rem;font-weight:500;color:var(--text2);margin-bottom:0.35rem}
+.form-input{width:100%;padding:0.6rem 0.85rem;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:0.88rem;color:var(--text);background:var(--white);outline:none;transition:border-color 0.15s}
+.form-input:focus{border-color:var(--blue-md);box-shadow:0 0 0 3px rgba(59,91,219,0.1)}
+.btn-primary-full{width:100%;padding:0.7rem;background:var(--blue);color:var(--white);border:none;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:0.88rem;font-weight:600;cursor:pointer;transition:background 0.15s}
+.btn-primary-full:hover{background:var(--blue-md)}
+.auth-divider{display:flex;align-items:center;gap:0.75rem;margin:1.5rem 0;font-size:0.75rem;color:var(--text3)}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.auth-link{color:var(--blue);cursor:pointer;text-decoration:underline}
+
+/* AUTH — REGISTER */
+.trial-badge{
+  background:linear-gradient(135deg,#1B3FAB,#3B5BDB);
+  color:var(--white);border-radius:8px;padding:1rem 1.25rem;
+  margin-bottom:1.5rem;display:flex;align-items:center;gap:0.75rem;
+}
+.trial-badge-icon{font-size:1.5rem;flex-shrink:0}
+.trial-badge-title{font-size:0.9rem;font-weight:600;margin-bottom:0.1rem}
+.trial-badge-sub{font-size:0.75rem;opacity:0.85}
+
+/* APP */
+#app-screen{display:none;min-height:100vh}
+.app-layout{display:flex;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar);background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100}
+.sidebar-brand{padding:1.25rem 1.25rem 1rem;border-bottom:1px solid var(--border)}
+.brand-name{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--blue);letter-spacing:-0.02em}
+.brand-name span{color:var(--text)}
+
+/* Trial pill en sidebar */
+.trial-pill{
+  display:flex;align-items:center;gap:0.4rem;margin-top:0.35rem;
+  font-size:0.68rem;font-weight:500;
+  color:var(--blue);background:var(--blue-lt);
+  border:1px solid rgba(27,63,171,0.2);
+  padding:0.2rem 0.5rem;border-radius:20px;width:fit-content;
+  cursor:pointer;
+}
+.trial-pill.warning{color:var(--amber);background:var(--amber-lt);border-color:rgba(146,64,14,0.2)}
+.trial-pill.expired{color:var(--red);background:var(--red-lt);border-color:rgba(192,57,43,0.2)}
+.trial-dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:pulse-dot 2s infinite}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:0.4}}
+
+.sidebar-nav{flex:1;padding:0.75rem 0;overflow-y:auto}
+.nav-section{padding:0.5rem 1.25rem 0.25rem;font-size:0.65rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3)}
+.nav-item{display:flex;align-items:center;gap:0.6rem;padding:0.55rem 1.25rem;font-size:0.85rem;color:var(--text2);cursor:pointer;transition:all 0.15s;border-left:3px solid transparent;margin:0.1rem 0}
+.nav-item:hover{background:var(--off);color:var(--text)}
+.nav-item.active{background:var(--blue-lt);color:var(--blue);border-left-color:var(--blue);font-weight:500}
+.nav-item.disabled{opacity:0.4;cursor:not-allowed;pointer-events:none}
+.nav-icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0}
+.sidebar-footer{padding:1rem 1.25rem;border-top:1px solid var(--border)}
+.user-info{display:flex;align-items:center;gap:0.6rem}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:var(--blue);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:0.78rem;font-weight:600;flex-shrink:0}
+.user-name{font-size:0.82rem;font-weight:500}
+.user-role{font-size:0.72rem;color:var(--text3)}
+.logout-btn{margin-left:auto;font-size:0.72rem;color:var(--text3);cursor:pointer;background:none;border:none;padding:0.25rem;border-radius:4px}
+.logout-btn:hover{color:var(--red);background:var(--red-lt)}
+
+/* MAIN */
+.main-content{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column}
+.topbar{background:var(--white);border-bottom:1px solid var(--border);padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-title{font-size:1rem;font-weight:600}
+.topbar-sub{font-size:0.78rem;color:var(--text3);margin-top:0.1rem}
+.topbar-actions{display:flex;align-items:center;gap:0.75rem}
+.btn-sm{padding:0.45rem 0.9rem;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:500;cursor:pointer;transition:all 0.15s;border:1px solid var(--border);background:var(--white);color:var(--text2)}
+.btn-sm:hover{background:var(--off)}
+.btn-sm.primary{background:var(--blue);color:var(--white);border-color:var(--blue)}
+.btn-sm.primary:hover{background:var(--blue-md)}
+.btn-sm.success{background:var(--green-lt);color:var(--green);border-color:#A7F3D0}
+.btn-sm.danger{background:var(--red-lt);color:var(--red);border-color:#FECACA}
+
+/* TRIAL BANNER — topbar */
+.trial-banner{
+  padding:0.65rem 1.5rem;display:flex;align-items:center;justify-content:space-between;
+  font-size:0.82rem;
+}
+.trial-banner.active{background:var(--blue-lt);border-bottom:1px solid rgba(27,63,171,0.15);color:var(--blue)}
+.trial-banner.warning{background:var(--amber-lt);border-bottom:1px solid rgba(146,64,14,0.2);color:var(--amber)}
+.trial-banner.expired{background:var(--red-lt);border-bottom:1px solid #FECACA;color:var(--red)}
+
+/* EXPIRED OVERLAY en zona de subida */
+.upload-locked{
+  border:2px dashed var(--border);border-radius:var(--radius);
+  padding:2.5rem;text-align:center;background:var(--off);
+  margin-bottom:1.5rem;
+}
+.lock-icon{font-size:2.5rem;margin-bottom:0.75rem;display:block}
+.lock-title{font-size:0.95rem;font-weight:600;color:var(--text2);margin-bottom:0.3rem}
+.lock-sub{font-size:0.82rem;color:var(--text3);margin-bottom:1rem}
+
+.page{padding:1.5rem;display:none}
+.page.active{display:block}
+
+/* CARDS */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.card-header{padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:0.88rem;font-weight:600}
+.card-subtitle{font-size:0.75rem;color:var(--text3)}
+.card-body{padding:1.25rem}
+
+.badge{display:inline-flex;align-items:center;padding:0.2rem 0.55rem;border-radius:20px;font-size:0.7rem;font-weight:500}
+.badge.green{background:var(--green-lt);color:var(--green)}
+.badge.blue{background:var(--blue-lt);color:var(--blue)}
+.badge.amber{background:var(--amber-lt);color:var(--amber)}
+.badge.red{background:var(--red-lt);color:var(--red)}
+.badge.purple{background:var(--purple-lt);color:var(--purple)}
+.badge.gray{background:var(--off);color:var(--text3);border:1px solid var(--border)}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
+.kpi-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--radius) var(--radius) 0 0}
+.kpi-card:nth-child(1)::after{background:var(--blue)}
+.kpi-card:nth-child(2)::after{background:var(--green)}
+.kpi-card:nth-child(3)::after{background:var(--amber)}
+.kpi-card:nth-child(4)::after{background:var(--purple)}
+.kpi-label{font-size:0.72rem;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.4rem}
+.kpi-value{font-size:1.6rem;font-weight:600;line-height:1;margin-bottom:0.3rem;font-family:'Playfair Display',serif}
+.kpi-change{font-size:0.75rem;color:var(--text3)}
+
+/* TABLE */
+.table-container{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:800px}
+thead th{padding:0.6rem 0.85rem;font-size:0.7rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;text-align:left;background:var(--off);border-bottom:1px solid var(--border);white-space:nowrap}
+tbody td{padding:0.6rem 0.85rem;font-size:0.82rem;color:var(--text2);border-bottom:1px solid var(--border);vertical-align:middle;position:relative}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#FAFBFC}
+td.editable{cursor:text}
+td.editable:hover{background:var(--edit)!important}
+td.editing{background:var(--edit)!important;outline:2px solid var(--edit-border);outline-offset:-2px;padding:0!important}
+td.editing input,td.editing select{width:100%;height:100%;padding:0.6rem 0.85rem;border:none;outline:none;background:transparent;font-family:inherit;font-size:0.82rem;color:var(--text)}
+tr.modified td{border-left:3px solid var(--amber)}
+.row-actions{display:flex;gap:0.3rem;justify-content:flex-end;opacity:0;transition:opacity 0.15s}
+tr:hover .row-actions{opacity:1}
+.row-btn{padding:0.2rem 0.5rem;border-radius:4px;font-size:0.72rem;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--white);color:var(--text3);transition:all 0.15s}
+.row-btn.save{background:var(--green-lt);color:var(--green);border-color:#A7F3D0}
+.row-btn.cancel{background:var(--red-lt);color:var(--red);border-color:#FECACA}
+.row-btn.delete{color:var(--red)}
+.row-btn:hover{background:var(--off);color:var(--text)}
+
+/* UPLOAD */
+.upload-area{border:2px dashed var(--border);border-radius:var(--radius);padding:2.5rem;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--white);margin-bottom:1.5rem;position:relative}
+.upload-area:hover,.upload-area.dragover{border-color:var(--blue-md);background:var(--blue-lt)}
+.upload-area input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+
+/* DOC TABS */
+.doc-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:1.25rem}
+.doc-tab{padding:0.65rem 1.25rem;font-size:0.83rem;font-weight:500;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.15s}
+.doc-tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+
+/* PROCESSING */
+.proc-item{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:0.85rem 1rem;display:flex;align-items:center;gap:0.85rem;margin-bottom:0.5rem}
+.proc-item.processing{border-color:var(--blue-md);background:var(--blue-lt)}
+.proc-item.done{border-color:#D1FAE5;background:var(--green-lt)}
+.spinner{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* PLAN PAGE */
+.plan-hero{
+  background:linear-gradient(135deg,#1B3FAB 0%,#2563EB 100%);
+  border-radius:var(--radius);padding:2rem;color:var(--white);margin-bottom:1.5rem;
+  position:relative;overflow:hidden;
+}
+.plan-hero::before{
+  content:'';position:absolute;top:-40px;right:-40px;
+  width:200px;height:200px;border-radius:50%;
+  background:rgba(255,255,255,0.06);
+}
+.plan-hero-tag{font-size:0.7rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;opacity:0.75;margin-bottom:0.4rem}
+.plan-hero-name{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;margin-bottom:0.25rem}
+.plan-hero-desc{font-size:0.85rem;opacity:0.85;margin-bottom:1.5rem}
+.plan-hero-trial{
+  background:rgba(255,255,255,0.15);border-radius:8px;padding:1rem 1.25rem;
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;
+}
+.plan-trial-days{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;line-height:1}
+.plan-trial-label{font-size:0.78rem;opacity:0.85;margin-top:0.1rem}
+.plan-trial-bar{flex:1;margin:0 1.25rem}
+.plan-trial-bar-track{height:8px;background:rgba(255,255,255,0.25);border-radius:4px;overflow:hidden}
+.plan-trial-bar-fill{height:100%;border-radius:4px;background:var(--white);transition:width 0.5s}
+.plan-trial-dates{font-size:0.72rem;opacity:0.75;margin-top:0.4rem;display:flex;justify-content:space-between}
+.btn-upgrade-hero{
+  width:100%;padding:0.8rem;background:var(--white);color:var(--blue);
+  border:none;border-radius:6px;font-family:'DM Sans',sans-serif;
+  font-size:0.9rem;font-weight:600;cursor:pointer;transition:opacity 0.15s;
+  display:flex;align-items:center;justify-content:center;gap:0.5rem;
+}
+.btn-upgrade-hero:hover{opacity:0.92}
+
+/* PLANES GRID */
+.planes-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem}
+.plan-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;box-shadow:var(--shadow);transition:all 0.2s;cursor:pointer}
+.plan-card:hover{border-color:var(--blue);box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.plan-card.recommended{border-color:var(--blue);position:relative}
+.plan-card.recommended::before{content:'Recomendado';position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--blue);color:var(--white);font-size:0.65rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding:0.2rem 0.75rem;border-radius:20px;white-space:nowrap}
+.plan-name{font-size:0.78rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.4rem}
+.plan-price{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--text);line-height:1;margin-bottom:0.15rem}
+.plan-price span{font-size:0.88rem;font-family:'DM Sans',sans-serif;font-weight:400;color:var(--text3)}
+.plan-desc{font-size:0.78rem;color:var(--text3);margin-bottom:1.25rem;padding-bottom:1.25rem;border-bottom:1px solid var(--border)}
+.plan-feature{display:flex;align-items:flex-start;gap:0.5rem;font-size:0.82rem;color:var(--text2);margin-bottom:0.5rem}
+.plan-feature-check{color:var(--green);flex-shrink:0;margin-top:0.05rem}
+.plan-cta{width:100%;padding:0.65rem;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;transition:all 0.15s;margin-top:1.25rem;border:none}
+.plan-cta.primary{background:var(--blue);color:var(--white)}
+.plan-cta.primary:hover{background:var(--blue-md)}
+.plan-cta.outline{background:transparent;border:1px solid var(--border);color:var(--text2)}
+.plan-cta.outline:hover{background:var(--off)}
+
+/* STRIPE MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:800;display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--white);border-radius:12px;padding:2rem;max-width:480px;width:90%;box-shadow:var(--shadow-lg)}
+.modal-logo{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--blue);margin-bottom:1.5rem;display:flex;align-items:center;gap:0.5rem}
+.modal-plan-badge{font-size:0.75rem;font-weight:500;color:var(--white);background:var(--blue);padding:0.2rem 0.6rem;border-radius:20px}
+.modal-price-display{text-align:center;padding:1.25rem;background:var(--off);border-radius:8px;margin-bottom:1.5rem}
+.modal-price-amount{font-family:'Playfair Display',serif;font-size:2.5rem;font-weight:700;color:var(--text)}
+.modal-price-period{font-size:0.82rem;color:var(--text3)}
+.modal-stripe-form{display:flex;flex-direction:column;gap:0.85rem}
+.stripe-field-label{font-size:0.75rem;font-weight:500;color:var(--text2);margin-bottom:0.3rem;display:block}
+.stripe-field{padding:0.7rem 0.9rem;border:1px solid var(--border);border-radius:6px;font-family:'DM Mono',monospace;font-size:0.88rem;color:var(--text);background:var(--white);outline:none;transition:border-color 0.15s;width:100%}
+.stripe-field:focus{border-color:var(--blue-md);box-shadow:0 0 0 3px rgba(59,91,219,0.1)}
+.stripe-row{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem}
+.stripe-secure{display:flex;align-items:center;gap:0.4rem;font-size:0.72rem;color:var(--text3);margin-top:0.5rem;justify-content:center}
+.stripe-logo{font-size:0.65rem;font-weight:600;background:var(--text);color:var(--white);padding:0.1rem 0.35rem;border-radius:3px;letter-spacing:0.05em}
+.modal-actions{display:flex;gap:0.75rem;margin-top:1rem}
+.modal-cancel{flex:0 0 auto;padding:0.65rem 1rem;border:1px solid var(--border);background:var(--white);border-radius:6px;font-size:0.85rem;cursor:pointer;color:var(--text2)}
+.modal-pay{flex:1;padding:0.65rem;background:var(--blue);color:var(--white);border:none;border-radius:6px;font-size:0.9rem;font-weight:600;cursor:pointer;transition:background 0.15s}
+.modal-pay:hover{background:var(--blue-md)}
+
+/* EXPIRED WALL */
+.expired-wall{
+  margin-bottom:1.5rem;background:var(--red-lt);border:1px solid #FECACA;
+  border-radius:var(--radius);padding:1.25rem 1.5rem;
+  display:flex;align-items:flex-start;gap:1rem;
+}
+.expired-wall-icon{font-size:1.5rem;flex-shrink:0}
+.expired-wall-title{font-size:0.9rem;font-weight:600;color:var(--red);margin-bottom:0.2rem}
+.expired-wall-desc{font-size:0.82rem;color:var(--text2);margin-bottom:0.75rem}
+
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;background:var(--text);color:var(--white);padding:0.75rem 1.25rem;border-radius:8px;font-size:0.83rem;box-shadow:var(--shadow-lg);transform:translateY(100px);opacity:0;transition:all 0.3s ease}
+.toast.visible{transform:translateY(0);opacity:1}
+.toast.green{background:var(--green)}
+.toast.amber{background:var(--amber)}
+
+.changes-banner{display:none;align-items:center;justify-content:space-between;padding:0.7rem 1.25rem;background:var(--amber-lt);border-bottom:1px solid #FDE68A;font-size:0.82rem;color:var(--amber)}
+.changes-banner.visible{display:flex}
+
+.historial-panel{position:fixed;right:0;top:0;bottom:0;width:360px;background:var(--white);border-left:1px solid var(--border);box-shadow:var(--shadow-lg);z-index:500;transform:translateX(100%);transition:transform 0.3s ease;display:flex;flex-direction:column}
+.historial-panel.open{transform:translateX(0)}
+.panel-header{padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.panel-title{font-size:0.92rem;font-weight:600}
+.panel-close{background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--text3);padding:0.25rem;border-radius:4px}
+.panel-close:hover{background:var(--off)}
+.panel-body{flex:1;overflow-y:auto;padding:1rem}
+.change-entry{padding:0.85rem;border:1px solid var(--border);border-radius:6px;margin-bottom:0.6rem}
+.change-field{font-size:0.78rem;font-weight:600;margin-bottom:0.35rem}
+.change-values{display:flex;align-items:center;gap:0.5rem;font-size:0.75rem}
+.change-old{color:var(--red);text-decoration:line-through;font-family:'DM Mono',monospace}
+.change-new{color:var(--green);font-family:'DM Mono',monospace;font-weight:500}
+.change-meta{font-size:0.7rem;color:var(--text3);margin-top:0.35rem}
+
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .main-content{margin-left:0}
+  .kpi-grid{grid-template-columns:1fr 1fr}
+  .planes-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ AUTH ═══════════════════════════════════════════════════════ -->
+<div id="auth-screen">
+  <div class="auth-card" id="loginCard">
+    <div class="auth-logo">Asesor<span>IA</span></div>
+    <div class="auth-tagline">Gestión fiscal inteligente para asesorías</div>
+    <div class="form-group">
+      <label class="form-label">Correo electrónico</label>
+      <input class="form-input" type="email" placeholder="nombre@asesoria.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Contraseña</label>
+      <input class="form-input" type="password" placeholder="••••••••">
+    </div>
+    <button class="btn-primary-full" onclick="doLogin('active')">Acceder</button>
+    <div class="auth-divider">simular estado de cuenta</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem">
+      <button class="btn-sm" onclick="doLogin('active')" style="font-size:0.75rem;padding:0.5rem">✅ Trial activo<br><span style="font-size:0.65rem;color:var(--text3)">22 días restantes</span></button>
+      <button class="btn-sm" onclick="doLogin('warning')" style="font-size:0.75rem;padding:0.5rem">⚠️ Trial expira<br><span style="font-size:0.65rem;color:var(--text3)">5 días restantes</span></button>
+      <button class="btn-sm" onclick="doLogin('expired')" style="font-size:0.75rem;padding:0.5rem">🔒 Trial expirado<br><span style="font-size:0.65rem;color:var(--text3)">Solo lectura</span></button>
+    </div>
+    <div style="margin-top:1.25rem;text-align:center;font-size:0.8rem;color:var(--text3)">
+      ¿Sin cuenta? <span class="auth-link" onclick="mostrarRegistro()">Crear cuenta gratis →</span>
+    </div>
+  </div>
+
+  <!-- REGISTRO -->
+  <div class="auth-card" id="registerCard" style="display:none">
+    <div class="auth-logo">Asesor<span>IA</span></div>
+    <div class="trial-badge">
+      <div class="trial-badge-icon">🎁</div>
+      <div>
+        <div class="trial-badge-title">30 días de prueba gratuita</div>
+        <div class="trial-badge-sub">Acceso completo · Sin tarjeta de crédito · Sin límites</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Nombre completo</label>
+      <input class="form-input" type="text" placeholder="Tu nombre">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Correo electrónico</label>
+      <input class="form-input" type="email" placeholder="nombre@asesoria.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Nombre de la asesoría</label>
+      <input class="form-input" type="text" placeholder="Asesoría García SL">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Contraseña</label>
+      <input class="form-input" type="password" placeholder="Mínimo 8 caracteres">
+    </div>
+    <button class="btn-primary-full" onclick="doLogin('active')">Empezar prueba gratuita →</button>
+    <div style="text-align:center;margin-top:1rem;font-size:0.75rem;color:var(--text3)">
+      Al registrarte aceptas los <span class="auth-link">Términos de servicio</span> y la <span class="auth-link">Política de privacidad</span>
+    </div>
+    <div style="text-align:center;margin-top:0.75rem;font-size:0.8rem;color:var(--text3)">
+      ¿Ya tienes cuenta? <span class="auth-link" onclick="mostrarLogin()">Iniciar sesión</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ APP ════════════════════════════════════════════════════════ -->
+<div id="app-screen">
+<div class="app-layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-name">Asesor<span>IA</span></div>
+      <div class="trial-pill" id="sidebarTrialPill" onclick="navTo('plan',null)"></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Principal</div>
+      <div class="nav-item active" onclick="navTo('dashboard',this)"><span class="nav-icon">▦</span> Dashboard</div>
+      <div class="nav-item" onclick="navTo('clientes',this)"><span class="nav-icon">🏢</span> Clientes</div>
+      <div class="nav-section" style="margin-top:0.5rem">Documentos</div>
+      <div class="nav-item" id="navDocumentos" onclick="navTo('documentos',this)"><span class="nav-icon">📄</span> Facturas y nóminas</div>
+      <div class="nav-item" onclick="navTo('informes',this)"><span class="nav-icon">📊</span> Informes fiscales</div>
+      <div class="nav-section" style="margin-top:0.5rem">Cuenta</div>
+      <div class="nav-item" onclick="navTo('plan',this)"><span class="nav-icon">⚡</span> Mi plan</div>
+      <div class="nav-item" onclick="navTo('configuracion',this)"><span class="nav-icon">⚙</span> Configuración</div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar">YR</div>
+        <div><div class="user-name">Yurena Rdgz.</div><div class="user-role">Administradora</div></div>
+        <button class="logout-btn" onclick="doLogout()">↩</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <!-- Trial banner -->
+    <div class="trial-banner" id="trialBanner"></div>
+
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="page-title">Dashboard</div>
+        <div class="topbar-sub" id="page-sub">Resumen del trimestre · Q2 2024</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn-sm" onclick="abrirHistorialPanel()">📋 Cambios <span id="changes-count" style="display:none;background:var(--amber);color:white;padding:0.1rem 0.4rem;border-radius:10px;font-size:0.65rem;margin-left:0.25rem">0</span></button>
+        <button class="btn-sm primary" id="btnSubir" onclick="navTo('documentos',null)">+ Subir documentos</button>
+      </div>
+    </div>
+
+    <!-- Banner cambios -->
+    <div class="changes-banner" id="changesBanner">
+      <span>⚠️ <strong id="banner-count">0</strong> cambios sin guardar</span>
+      <div style="display:flex;gap:0.5rem">
+        <button class="btn-sm" onclick="descartarCambios()">Descartar</button>
+        <button class="btn-sm success" onclick="guardarTodosCambios()">✓ Guardar todos</button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Base imponible Q2</div><div class="kpi-value">6.480€</div><div class="kpi-change">▲ 12% vs Q1</div></div>
+        <div class="kpi-card"><div class="kpi-label">IGIC soportado</div><div class="kpi-value">9,17€</div><div class="kpi-change" style="color:var(--green)">Deducible</div></div>
+        <div class="kpi-card"><div class="kpi-label">A pagar a Hacienda</div><div class="kpi-value" style="color:var(--red)">1.532€</div><div class="kpi-change">Mod. 420 + 130</div></div>
+        <div class="kpi-card"><div class="kpi-label">Documentos Q2</div><div class="kpi-value">8 docs</div><div class="kpi-change">Todos procesados</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Últimas facturas · Edición inline activa</div><div class="card-subtitle">Clic en cualquier celda para editar · Tab para avanzar · Enter para confirmar</div></div>
+          <button class="btn-sm primary" onclick="navTo('documentos',null)">Ver todas →</button>
+        </div>
+        <div class="changes-banner" id="dash-changes-banner" style="border-radius:0">
+          <span>⚠️ <strong id="dash-banner-count">0</strong> cambios sin guardar</span>
+          <button class="btn-sm success" style="font-size:0.75rem;padding:0.3rem 0.7rem" onclick="guardarTodosCambios()">✓ Guardar</button>
+        </div>
+        <div class="table-container" id="dash-table-container"></div>
+      </div>
+    </div>
+
+    <!-- DOCUMENTOS -->
+    <div class="page" id="page-documentos">
+      <div id="upload-section"></div>
+      <div id="proc-section" style="display:none;margin-bottom:1.25rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem">
+          <div style="font-size:0.85rem;font-weight:600">Procesando con Claude IA</div>
+          <div id="proc-count" style="font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--text3)">0 / 0</div>
+        </div>
+        <div style="height:4px;background:var(--border);border-radius:2px;margin-bottom:1rem;overflow:hidden">
+          <div id="proc-bar" style="height:100%;background:var(--blue);border-radius:2px;width:0%;transition:width 0.5s"></div>
+        </div>
+        <div id="proc-list"></div>
+      </div>
+      <div class="doc-tabs">
+        <div class="doc-tab active" onclick="filterDocs('todos',this)">Todos (8)</div>
+        <div class="doc-tab" onclick="filterDocs('gasto',this)">📥 Gastos (5)</div>
+        <div class="doc-tab" onclick="filterDocs('ingreso',this)">📤 Ingresos (2)</div>
+        <div class="doc-tab" onclick="filterDocs('nomina',this)">👤 Nóminas (1)</div>
+        <div class="doc-tab" onclick="filterDocs('alquiler',this)">🏠 Alquileres (1)</div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Documentos registrados</div><div class="card-subtitle" id="docs-subtitle">Q2 2024 · Haz clic en cualquier celda para editar</div></div>
+          <div style="display:flex;gap:0.5rem;align-items:center">
+            <span id="docs-modified-count" style="font-size:0.75rem;color:var(--amber);display:none">● <strong>0</strong> sin guardar</span>
+            <button class="btn-sm success" id="btn-save-all" style="display:none" onclick="guardarTodosCambios()">✓ Guardar todos</button>
+            <button class="btn-sm" onclick="exportarCSV()">⬇ Exportar</button>
+          </div>
+        </div>
+        <div class="table-container" id="docs-table-container"></div>
+      </div>
+    </div>
+
+    <!-- CLIENTES -->
+    <div class="page" id="page-clientes">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem">
+        <div class="card" style="padding:1.25rem;cursor:pointer">
+          <div style="font-size:1.5rem;margin-bottom:0.5rem">🍔</div>
+          <div style="font-weight:600;margin-bottom:0.2rem">Kapricho Burguer SCP</div>
+          <div style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--text3);margin-bottom:0.6rem">J42909390</div>
+          <span class="badge green">Al día</span>
+        </div>
+        <div class="card" style="padding:1.25rem;cursor:pointer">
+          <div style="font-size:1.5rem;margin-bottom:0.5rem">🍽️</div>
+          <div style="font-weight:600;margin-bottom:0.2rem">Restaurante El Charco SL</div>
+          <div style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--text3);margin-bottom:0.6rem">B12345678</div>
+          <span class="badge amber">Pendiente docs</span>
+        </div>
+        <div class="card" style="padding:1.25rem;cursor:pointer">
+          <div style="font-size:1.5rem;margin-bottom:0.5rem">🦷</div>
+          <div style="font-weight:600;margin-bottom:0.2rem">Clínica Dental Atlántico</div>
+          <div style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--text3);margin-bottom:0.6rem">A98765432</div>
+          <span class="badge green">Al día</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- INFORMES -->
+    <div class="page" id="page-informes">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem">
+        <div class="card" style="padding:1.25rem">
+          <div style="font-size:1.5rem;margin-bottom:0.5rem">📊</div>
+          <div style="font-weight:600;margin-bottom:0.15rem">Kapricho Burguer SCP</div>
+          <div style="font-size:0.75rem;color:var(--text3);margin-bottom:1rem">Q2 2024 · 8 documentos</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;padding:0.75rem 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:0.75rem">
+            <div><div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase">Mod. 420</div><div style="font-family:'DM Mono',monospace;font-size:0.88rem;color:var(--red);font-weight:500">410,83€</div></div>
+            <div><div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase">Mod. 130</div><div style="font-family:'DM Mono',monospace;font-size:0.88rem;color:var(--red);font-weight:500">1.121,21€</div></div>
+            <div><div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase">Mod. 115</div><div style="font-family:'DM Mono',monospace;font-size:0.88rem;color:var(--red);font-weight:500">152,00€</div></div>
+            <div><div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase">Mod. 111</div><div style="font-family:'DM Mono',monospace;font-size:0.88rem;color:var(--red);font-weight:500">996,00€</div></div>
+          </div>
+          <button style="width:100%;padding:0.55rem;background:var(--off);border:1px solid var(--border);border-radius:6px;font-size:0.8rem;font-weight:500;cursor:pointer" onclick="showToast('Excel generado y listo para descargar','green')">⬇ Descargar Excel completo</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PLAN -->
+    <div class="page" id="page-plan">
+      <div style="max-width:800px">
+
+        <div class="plan-hero" id="planHero"></div>
+
+        <div class="planes-grid">
+          <div class="plan-card">
+            <div class="plan-name">Starter</div>
+            <div class="plan-price">29€<span>/mes</span></div>
+            <div class="plan-desc">Para asesorías pequeñas con hasta 5 clientes</div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span> 150 documentos/mes</div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span> Hasta 5 empresas</div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span> 3 usuarios</div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span> Modelos 420, 130, 115, 111</div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span> WhatsApp + Email</div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span> Excel por cliente + PGC</div>
+            <button class="plan-cta primary" onclick="abrirStripe('Starter','29')">Elegir Starter →</button>
+          </div>
+          <div class="plan-card recommended">
+            <div class="plan-name">Pro</div>
+            <div class="plan-price">79€<span>/mes</span></div>
+            <div class="plan-desc">Para asesorías con cartera de clientes ilimitada</div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span> Documentos ilimitados</div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span> Clientes ilimitados</div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span> Usuarios ilimitados</div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span> Todo lo de Starter</div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span> Soporte prioritario</div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span> Personalización de marca</div>
+            <button class="plan-cta primary" onclick="abrirStripe('Pro','79')">Elegir Pro →</button>
+          </div>
+          <div class="plan-card">
+            <div class="plan-name">Enterprise</div>
+            <div class="plan-price">149€<span>/mes</span></div>
+            <div class="plan-desc">Para grupos de asesorías y grandes despachos</div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span> Todo lo de Pro</div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span> Multi-asesoría</div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span> API propia</div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span> Onboarding personalizado</div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span> SLA garantizado</div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span> Facturación anual con dto.</div>
+            <button class="plan-cta primary" onclick="abrirStripe('Enterprise','149')">Elegir Enterprise →</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Comparativa completa</div></div>
+          <div class="table-container">
+            <table>
+              <thead><tr><th>Característica</th><th>Prueba</th><th>Starter</th><th>Pro</th><th>Enterprise</th></tr></thead>
+              <tbody>
+                <tr><td>Duración</td><td>30 días</td><td>Mensual</td><td>Mensual</td><td>Mensual/Anual</td></tr>
+                <tr><td>Documentos/mes</td><td style="color:var(--green);font-weight:500">Ilimitado</td><td>150</td><td style="color:var(--green);font-weight:500">Ilimitado</td><td style="color:var(--green);font-weight:500">Ilimitado</td></tr>
+                <tr><td>Empresas gestionadas</td><td style="color:var(--green);font-weight:500">Ilimitado</td><td>5</td><td style="color:var(--green);font-weight:500">Ilimitado</td><td style="color:var(--green);font-weight:500">Ilimitado</td></tr>
+                <tr><td>Modelos fiscales (420/130/115/111)</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+                <tr><td>Clasificación PGC automática</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+                <tr><td>Edición inline + historial</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+                <tr><td>WhatsApp + Email automático</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+                <tr><td>Excel por cliente</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+                <tr><td>Usuarios</td><td>1</td><td>3</td><td style="color:var(--green);font-weight:500">Ilimitado</td><td style="color:var(--green);font-weight:500">Ilimitado</td></tr>
+                <tr><td>Precio</td><td style="color:var(--green);font-weight:600">Gratis</td><td style="font-weight:600">29€/mes</td><td style="font-weight:600">79€/mes</td><td style="font-weight:600">149€/mes</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIGURACIÓN -->
+    <div class="page" id="page-configuracion">
+      <div style="max-width:560px">
+        <div class="card" style="margin-bottom:1rem">
+          <div class="card-header"><div class="card-title">Datos de la cuenta</div></div>
+          <div class="card-body">
+            <div class="form-group"><label class="form-label">Nombre</label><input class="form-input" value="Yurena Rodríguez"></div>
+            <div class="form-group"><label class="form-label">Correo</label><input class="form-input" value="yurena@innovaiasystems.com"></div>
+            <div class="form-group"><label class="form-label">Asesoría</label><input class="form-input" value="Hiram Consulting S.L."></div>
+            <button class="btn-sm primary">Guardar cambios</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">API Key de Claude</div></div>
+          <div class="card-body">
+            <div class="form-group"><label class="form-label">Clave de Anthropic</label><input class="form-input" type="password" placeholder="sk-ant-api03-..." style="font-family:'DM Mono',monospace"></div>
+            <div style="font-size:0.75rem;color:var(--text3);margin-bottom:0.75rem">Almacenada cifrada. Solo se usa para procesar tus documentos.</div>
+            <button class="btn-sm primary">Guardar clave</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+</div>
+
+<!-- HISTORIAL PANEL -->
+<div class="historial-panel" id="historialPanel">
+  <div class="panel-header">
+    <div class="panel-title">📋 Historial de cambios</div>
+    <button class="panel-close" onclick="cerrarHistorialPanel()">✕</button>
+  </div>
+  <div class="panel-body" id="historialPanelBody">
+    <div style="text-align:center;padding:2rem;color:var(--text3)">
+      <span style="font-size:2rem;display:block;margin-bottom:0.5rem;opacity:0.4">📝</span>
+      <div style="font-size:0.85rem">Sin cambios registrados aún.</div>
+    </div>
+  </div>
+</div>
+
+<!-- STRIPE MODAL -->
+<div class="modal-overlay" id="stripeModal">
+  <div class="modal">
+    <div class="modal-logo">
+      <span>Asesor<b>IA</b></span>
+      <span class="modal-plan-badge" id="stripePlanBadge">Starter</span>
+    </div>
+    <div class="modal-price-display">
+      <div class="modal-price-amount"><span id="stripePrice">29</span>€</div>
+      <div class="modal-price-period">al mes · cancela cuando quieras</div>
+    </div>
+    <div class="modal-stripe-form">
+      <div>
+        <label class="stripe-field-label">Número de tarjeta</label>
+        <input class="stripe-field" placeholder="1234 5678 9012 3456" maxlength="19" oninput="formatCard(this)">
+      </div>
+      <div class="stripe-row">
+        <div>
+          <label class="stripe-field-label">Caducidad</label>
+          <input class="stripe-field" placeholder="MM / AA" maxlength="7" oninput="formatExpiry(this)">
+        </div>
+        <div>
+          <label class="stripe-field-label">CVC</label>
+          <input class="stripe-field" placeholder="123" maxlength="3">
+        </div>
+      </div>
+      <div>
+        <label class="stripe-field-label">Nombre en la tarjeta</label>
+        <input class="stripe-field" placeholder="YURENA RODRIGUEZ" style="font-family:'DM Sans',sans-serif;text-transform:uppercase">
+      </div>
+    </div>
+    <div class="stripe-secure">
+      <span>🔒 Pago seguro con</span>
+      <span class="stripe-logo">stripe</span>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="cerrarStripe()">Cancelar</button>
+      <button class="modal-pay" onclick="simularPago()">Activar plan →</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══ ESTADO ════════════════════════════════════════════════════════════
+let trialState = 'active'; // 'active' | 'warning' | 'expired'
+let daysLeft = 22;
+
+const TRIAL_CONFIG = {
+  active:  { days:22, pill:'🟢 Prueba · 22 días', pillClass:'',        bannerMsg:'Prueba gratuita activa · <strong>22 días restantes</strong> · Sin límites · Sin tarjeta requerida', bannerClass:'active' },
+  warning: { days:5,  pill:'⚠️ Prueba · 5 días',  pillClass:'warning',  bannerMsg:'Tu prueba gratuita termina en <strong>5 días</strong> · Elige un plan para no perder el acceso', bannerClass:'warning' },
+  expired: { days:0,  pill:'🔒 Prueba expirada',   pillClass:'expired',  bannerMsg:'Tu prueba gratuita ha terminado · <strong>Los datos están guardados</strong> · Elige un plan para continuar subiendo documentos', bannerClass:'expired' },
+};
+
+// ══ DATOS ═════════════════════════════════════════════════════════════
+const DOCS = [
+  {id:1,num:'000640',     fecha:'20/04/2024',entidad:'Comercial EDAR',      nif:'Y7593556M',tipo:'gasto',   tipo_label:'📥 Gasto',   cliente:'Kapricho',concepto:'Envases take away 780ml + Servilletas',       base:148.20,igic_pct:'3%',   igic:4.45, retencion:0,  total:152.65,pgc:'602',forma_pago:'Contado'},
+  {id:2,num:'ARR-2024-04',fecha:'01/04/2024',entidad:'Inmob. Costa Sur',    nif:'B38445566',tipo:'alquiler',tipo_label:'🏠 Alquiler',cliente:'Kapricho',concepto:'Alquiler local comercial — abril 2024',         base:800.00,igic_pct:'7%',   igic:56.00,retencion:152,total:704.00,pgc:'621',forma_pago:'Transferencia'},
+  {id:3,num:'KAP-2024-041',fecha:'05/04/2024',entidad:'Turista Directo SL', nif:'B38112233',tipo:'ingreso', tipo_label:'📤 Ingreso',  cliente:'Kapricho',concepto:'Restauración — menú degustación x12',          base:480.00,igic_pct:'7%',   igic:33.60,retencion:0,  total:513.60,pgc:'705',forma_pago:'TPV'},
+  {id:4,num:'KAP-2024-042',fecha:'12/04/2024',entidad:'Hotel Morro Beach',  nif:'A28993311',tipo:'ingreso', tipo_label:'📤 Ingreso',  cliente:'Kapricho',concepto:'Catering evento corporativo 40 pax',           base:860.00,igic_pct:'7%',   igic:60.20,retencion:0,  total:920.20,pgc:'705',forma_pago:'Transferencia'},
+  {id:5,num:'FVR2402434',  fecha:'27/03/2024',entidad:'QMV Quimiventura',   nif:'B35621440',tipo:'gasto',   tipo_label:'📥 Gasto',   cliente:'Kapricho',concepto:'Productos limpieza e higiene',                  base:135.49,igic_pct:'3%/7%',igic:4.72, retencion:0,  total:140.21,pgc:'629',forma_pago:'Datáfono'},
+  {id:6,num:'22FE02705',   fecha:'18/10/2022',entidad:'Ecofuer',            nif:'78525623N',tipo:'gasto',   tipo_label:'📥 Gasto',   cliente:'Kapricho',concepto:'Envase cartón burger grande 150x150x70mm',      base:64.50, igic_pct:'Exento',igic:0,    retencion:0,  total:64.50, pgc:'602',forma_pago:'Transferencia'},
+  {id:7,num:'Marzo 2024',  fecha:'31/03/2024',entidad:'Ana Pérez Ramos',    nif:'45112233T',tipo:'nomina',  tipo_label:'👤 Nómina',  cliente:'Kapricho',concepto:'Sueldo marzo · IRPF 12% · SS empresa 480€',     base:1600.00,igic_pct:'—',  igic:0,    retencion:192,total:2080.00,pgc:'640',forma_pago:'Transferencia'},
+  {id:8,num:'MK-20240315', fecha:'15/03/2024',entidad:'Makro España SA',    nif:'A28164754',tipo:'gasto',   tipo_label:'📥 Gasto',   cliente:'El Charco',concepto:'Alimentación y bebidas',                       base:320.00,igic_pct:'7%',   igic:22.40,retencion:0,  total:342.40,pgc:'600',forma_pago:'Tarjeta'},
+];
+let docsData = JSON.parse(JSON.stringify(DOCS));
+let changeHistory = [];
+let pendingChanges = new Set();
+let currentFilter = 'todos';
+let activeEdit = null;
+
+const COLUMNS = [
+  {key:'num',       label:'Nº Doc.',          editable:true, type:'text',   width:'100px'},
+  {key:'fecha',     label:'Fecha',            editable:true, type:'text',   width:'100px'},
+  {key:'entidad',   label:'Proveedor/Cliente',editable:true, type:'text',   width:'150px'},
+  {key:'nif',       label:'NIF',              editable:true, type:'text',   mono:true, width:'100px'},
+  {key:'concepto',  label:'Concepto',         editable:true, type:'text',   width:'200px'},
+  {key:'tipo_label',label:'Tipo',             editable:true, type:'select', options:['📥 Gasto','📤 Ingreso','🏠 Alquiler','👤 Nómina'], width:'110px'},
+  {key:'base',      label:'Base',             editable:true, type:'number', mono:true, width:'85px'},
+  {key:'igic_pct',  label:'IGIC %',           editable:true, type:'text',   mono:true, width:'65px'},
+  {key:'igic',      label:'Cuota IGIC',       editable:true, type:'number', mono:true, width:'85px'},
+  {key:'retencion', label:'Retención',        editable:true, type:'number', mono:true, width:'85px'},
+  {key:'total',     label:'Total',            editable:true, type:'number', mono:true, width:'90px'},
+  {key:'pgc',       label:'PGC',              editable:true, type:'text',   mono:true, width:'60px'},
+  {key:'forma_pago',label:'Forma pago',       editable:true, type:'text',   width:'100px'},
+  {key:'_actions',  label:'',                 editable:false, width:'90px'},
+];
+
+const FIELD_LABELS = {num:'Nº documento',fecha:'Fecha',entidad:'Proveedor/Cliente',nif:'NIF',concepto:'Concepto',tipo_label:'Tipo',base:'Base imponible',igic_pct:'IGIC %',igic:'Cuota IGIC',retencion:'Retención',total:'Total',pgc:'Cuenta PGC',forma_pago:'Forma de pago'};
+
+// ══ RENDER TABLA ══════════════════════════════════════════════════════
+function renderTabla(containerId, filter='todos', maxRows=null) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  let rows = docsData;
+  if (filter !== 'todos') rows = rows.filter(d => d.tipo === filter);
+  if (maxRows) rows = rows.slice(0, maxRows);
+
+  let html = '<table><thead><tr>';
+  COLUMNS.forEach(c => { html += `<th style="width:${c.width||'auto'}">${c.label}</th>`; });
+  html += '</tr></thead><tbody>';
+
+  rows.forEach(doc => {
+    const mod = pendingChanges.has(doc.id);
+    html += `<tr id="row-${doc.id}" class="${mod?'modified':''}">`;
+    COLUMNS.forEach(col => {
+      if (col.key === '_actions') {
+        html += `<td style="text-align:right"><div class="row-actions">
+          ${mod?`<button class="row-btn save" onclick="guardarFila(${doc.id})">✓</button><button class="row-btn cancel" onclick="descartarFila(${doc.id})">✕</button>`:''}
+          <button class="row-btn delete" onclick="eliminarFila(${doc.id})">🗑</button>
+        </div></td>`;
+      } else {
+        const val = doc[col.key];
+        const isCurrency = ['base','igic','retencion','total'].includes(col.key);
+        const display = isCurrency ? (val>0?fmtNum(val):'—') : (val||'—');
+        const style = col.mono?"font-family:'DM Mono',monospace;":"";
+        const color = col.key==='total'?'font-weight:500;': col.key==='retencion'&&val>0?'color:var(--amber);': col.key==='igic'&&val>0?'color:var(--green);': col.key==='pgc'?'color:var(--blue);':'';
+        html += `<td class="${col.editable?'editable':''}" style="${style}${color}" data-id="${doc.id}" data-key="${col.key}" onclick="startEdit(this,${doc.id},'${col.key}')">
+          ${col.key==='tipo_label'?`<span class="badge ${tipoBadge(doc.tipo)}">${display}</span>`:display}
+        </td>`;
+      }
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+function tipoBadge(t){return{gasto:'green',ingreso:'blue',alquiler:'amber',nomina:'purple'}[t]||'gray'}
+
+// ══ EDICIÓN INLINE ════════════════════════════════════════════════════
+function startEdit(td, docId, key) {
+  if (trialState==='expired') { showToast('Trial expirado — elige un plan para editar',''); navTo('plan',null); return; }
+  if (activeEdit && activeEdit.td!==td) commitEdit(activeEdit, false);
+  const col = COLUMNS.find(c=>c.key===key);
+  if (!col||!col.editable) return;
+  const doc = docsData.find(d=>d.id===docId);
+  const currentVal = doc[key];
+  td.classList.add('editing');
+  let input;
+  if (col.type==='select') {
+    input = document.createElement('select');
+    col.options.forEach(opt=>{const o=document.createElement('option');o.value=opt;o.textContent=opt;if(opt===currentVal)o.selected=true;input.appendChild(o);});
+  } else {
+    input=document.createElement('input');
+    input.type=col.type==='number'?'number':'text';
+    input.value=currentVal||'';
+    if(col.type==='number'){input.step='0.01';input.min='0';}
+    if(col.mono)input.style.fontFamily="'DM Mono',monospace";
+  }
+  td.innerHTML=''; td.appendChild(input); input.focus(); if(input.select)input.select();
+  activeEdit={td,docId,key,input,originalVal:currentVal};
+  input.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){commitEdit(activeEdit,true);activeEdit=null;}
+    if(e.key==='Escape'){commitEdit(activeEdit,false);activeEdit=null;}
+    if(e.key==='Tab'){e.preventDefault();commitEdit(activeEdit,true);activeEdit=null;moverSiguiente(td,docId,key,e.shiftKey);}
+  });
+  input.addEventListener('blur',()=>{if(activeEdit){commitEdit(activeEdit,true);activeEdit=null;}});
+}
+
+function commitEdit(edit, guardar) {
+  if(!edit)return;
+  const{td,docId,key,input,originalVal}=edit;
+  const doc=docsData.find(d=>d.id===docId);
+  const col=COLUMNS.find(c=>c.key===key);
+  if(guardar){
+    let newVal=input.value;
+    if(col.type==='number')newVal=parseFloat(newVal)||0;
+    if(String(newVal)!==String(originalVal)){
+      changeHistory.unshift({id:docId,field:key,oldVal:originalVal,newVal,user:'Yurena Rdgz.',timestamp:new Date().toLocaleString('es-ES')});
+      doc[key]=newVal;
+      pendingChanges.add(docId);
+      actualizarContadores();
+    }
+  }
+  td.classList.remove('editing');
+  const isCurrency=['base','igic','retencion','total'].includes(key);
+  const val=doc[key];
+  if(key==='tipo_label'){td.innerHTML=`<span class="badge ${tipoBadge(doc.tipo)}">${val||'—'}</span>`;}
+  else{td.textContent=isCurrency?(val>0?fmtNum(val):'—'):(val||'—');}
+  const row=document.getElementById('row-'+docId);
+  if(row)row.className=pendingChanges.has(docId)?'modified':'';
+  actualizarBotonesAccion(docId);
+  renderHistorialPanel();
+}
+
+function moverSiguiente(td,docId,currentKey,reverse){
+  const editables=COLUMNS.filter(c=>c.editable&&c.key!=='_actions');
+  const idx=editables.findIndex(c=>c.key===currentKey);
+  const next=reverse?idx-1:idx+1;
+  if(next<0||next>=editables.length)return;
+  const nextTd=document.querySelector(`td[data-id="${docId}"][data-key="${editables[next].key}"]`);
+  if(nextTd)startEdit(nextTd,docId,editables[next].key);
+}
+
+function actualizarBotonesAccion(docId){
+  const row=document.getElementById('row-'+docId);
+  if(!row)return;
+  const div=row.querySelector('.row-actions');
+  if(!div)return;
+  const mod=pendingChanges.has(docId);
+  const existing=div.querySelector('.row-btn.save');
+  if(mod&&!existing){div.insertAdjacentHTML('afterbegin',`<button class="row-btn save" onclick="guardarFila(${docId})">✓</button><button class="row-btn cancel" onclick="descartarFila(${docId})">✕</button>`);}
+  else if(!mod&&existing){existing.nextSibling.remove();existing.remove();}
+}
+
+// ══ GUARDAR / DESCARTAR ═══════════════════════════════════════════════
+function guardarFila(id){pendingChanges.delete(id);const r=document.getElementById('row-'+id);if(r)r.className='';actualizarBotonesAccion(id);actualizarContadores();showToast('✓ Guardado','green');}
+function descartarFila(id){const orig=DOCS.find(d=>d.id===id);const idx=docsData.findIndex(d=>d.id===id);docsData[idx]=JSON.parse(JSON.stringify(orig));pendingChanges.delete(id);renderTabla('dash-table-container','todos',4);renderTabla('docs-table-container',currentFilter);actualizarContadores();showToast('Cambios descartados','amber');}
+function guardarTodosCambios(){const n=pendingChanges.size;pendingChanges.clear();renderTabla('dash-table-container','todos',4);renderTabla('docs-table-container',currentFilter);actualizarContadores();showToast(`✓ ${n} documento${n>1?'s':''} guardado${n>1?'s':''}','green`);}
+function descartarCambios(){pendingChanges.forEach(id=>{const orig=DOCS.find(d=>d.id===id);const idx=docsData.findIndex(d=>d.id===id);docsData[idx]=JSON.parse(JSON.stringify(orig));});pendingChanges.clear();renderTabla('dash-table-container','todos',4);renderTabla('docs-table-container',currentFilter);actualizarContadores();showToast('Cambios descartados','amber');}
+function eliminarFila(id){if(!confirm('¿Eliminar este documento?'))return;docsData=docsData.filter(d=>d.id!==id);pendingChanges.delete(id);renderTabla('dash-table-container','todos',4);renderTabla('docs-table-container',currentFilter);actualizarContadores();showToast('Documento eliminado','amber');}
+
+function actualizarContadores(){
+  const n=pendingChanges.size;
+  document.getElementById('changesBanner').classList.toggle('visible',n>0);
+  document.getElementById('dash-changes-banner').classList.toggle('visible',n>0);
+  document.getElementById('banner-count').textContent=n;
+  document.getElementById('dash-banner-count').textContent=n;
+  const cc=document.getElementById('changes-count');
+  cc.style.display=n>0?'inline':'none'; cc.textContent=n;
+  const bsa=document.getElementById('btn-save-all');
+  if(bsa)bsa.style.display=n>0?'inline-flex':'none';
+  const dmc=document.getElementById('docs-modified-count');
+  if(dmc){dmc.style.display=n>0?'inline':'none';dmc.innerHTML=`● <strong>${n}</strong> sin guardar`;}
+}
+
+// ══ HISTORIAL ════════════════════════════════════════════════════════
+function renderHistorialPanel(){
+  const body=document.getElementById('historialPanelBody');
+  if(!changeHistory.length){body.innerHTML='<div style="text-align:center;padding:2rem;color:var(--text3)"><span style="font-size:2rem;display:block;margin-bottom:0.5rem;opacity:0.4">📝</span><div style="font-size:0.85rem">Sin cambios registrados aún.</div></div>';return;}
+  body.innerHTML=changeHistory.map(c=>{const doc=docsData.find(d=>d.id===c.id);return`<div class="change-entry"><div class="change-field">${FIELD_LABELS[c.field]||c.field}</div><div style="font-size:0.72rem;color:var(--text3);margin-bottom:0.3rem">${doc?.entidad||'Doc #'+c.id}</div><div class="change-values"><span class="change-old">${c.oldVal||'—'}</span><span style="color:var(--text3)">→</span><span class="change-new">${c.newVal||'—'}</span></div><div class="change-meta">${c.user} · ${c.timestamp}</div></div>`;}).join('');
+}
+function abrirHistorialPanel(){document.getElementById('historialPanel').classList.add('open');renderHistorialPanel();}
+function cerrarHistorialPanel(){document.getElementById('historialPanel').classList.remove('open');}
+
+// ══ UPLOAD ═══════════════════════════════════════════════════════════
+function renderUploadSection(){
+  const section=document.getElementById('upload-section');
+  if(!section)return;
+  if(trialState==='expired'){
+    section.innerHTML=`<div class="expired-wall">
+      <div class="expired-wall-icon">🔒</div>
+      <div>
+        <div class="expired-wall-title">Periodo de prueba finalizado</div>
+        <div class="expired-wall-desc">Tus documentos están guardados y puedes consultarlos. Para subir nuevas facturas o nóminas elige un plan.</div>
+        <button class="btn-sm primary" onclick="navTo('plan',null)">Ver planes →</button>
+      </div>
+    </div>`;
+  } else {
+    section.innerHTML=`<div class="upload-area" id="uploadArea">
+      <input type="file" multiple accept="image/*,application/pdf" onchange="handleUpload(this.files)">
+      <span style="font-size:2rem;display:block;margin-bottom:0.75rem">📂</span>
+      <div style="font-size:0.95rem;font-weight:600;margin-bottom:0.3rem">Arrastra facturas, albaranes o nóminas</div>
+      <div style="font-size:0.8rem;color:var(--text3)">JPG · PNG · PDF · Fotos de móvil · Varios a la vez</div>
+      <div style="margin-top:0.75rem"><span class="badge blue">🤖 Claude los clasifica automáticamente</span></div>
+    </div>`;
+  }
+}
+
+function handleUpload(files){
+  if(!files.length)return;
+  const section=document.getElementById('proc-section');
+  const list=document.getElementById('proc-list');
+  section.style.display='block'; list.innerHTML='';
+  Array.from(files).forEach((file,i)=>{
+    const item=document.createElement('div');
+    item.className='proc-item processing';
+    item.innerHTML=`<div class="spinner"></div><div style="flex:1"><div style="font-size:0.83rem;font-weight:500">${file.name}</div><div style="font-size:0.75rem;color:var(--text3)">Claude analizando...</div></div><span class="badge blue">Procesando</span>`;
+    list.appendChild(item);
+    setTimeout(()=>{
+      item.className='proc-item done';
+      item.innerHTML=`<span style="font-size:1.2rem">✅</span><div style="flex:1"><div style="font-size:0.83rem;font-weight:500">${file.name}</div><div style="font-size:0.75rem;color:var(--green)">Extraído · Cta. 602 · Gasto · 148,20€ base · IGIC 3%</div></div><span class="badge green">✓ Listo</span>`;
+      document.getElementById('proc-bar').style.width=((i+1)/files.length*100)+'%';
+      document.getElementById('proc-count').textContent=(i+1)+' / '+files.length;
+    },2000+i*800);
+  });
+}
+
+// ══ FILTROS ══════════════════════════════════════════════════════════
+function filterDocs(filter,el){
+  currentFilter=filter;
+  document.querySelectorAll('.doc-tab').forEach(t=>t.classList.remove('active'));
+  if(el)el.classList.add('active');
+  renderTabla('docs-table-container',filter);
+}
+
+// ══ TRIAL / PLAN HERO ════════════════════════════════════════════════
+function renderTrialUI(){
+  const cfg=TRIAL_CONFIG[trialState];
+  // Sidebar pill
+  const pill=document.getElementById('sidebarTrialPill');
+  pill.textContent=cfg.pill; pill.className='trial-pill '+cfg.pillClass;
+  // Banner topbar
+  const banner=document.getElementById('trialBanner');
+  banner.className='trial-banner '+cfg.bannerClass;
+  banner.innerHTML=`<span>${cfg.bannerMsg}</span>${trialState!=='active'?`<button class="btn-sm primary" onclick="navTo('plan',null)" style="font-size:0.78rem;padding:0.4rem 0.85rem;flex-shrink:0">Elegir plan →</button>`:''}`;
+  // Botón subir
+  const btnSubir=document.getElementById('btnSubir');
+  if(btnSubir){btnSubir.style.display=trialState==='expired'?'none':'flex';}
+  // Plan hero
+  const hero=document.getElementById('planHero');
+  if(hero){
+    if(trialState==='expired'){
+      hero.style.background='linear-gradient(135deg,#8B0000 0%,#C0392B 100%)';
+      hero.innerHTML=`<div class="plan-hero-tag">Estado</div><div class="plan-hero-name">Prueba finalizada</div><div class="plan-hero-desc">Tus datos están guardados. Elige un plan para continuar.</div>`;
+    } else {
+      const pct=((30-cfg.days)/30*100).toFixed(0);
+      const inicio=new Date(); inicio.setDate(inicio.getDate()-30+cfg.days);
+      const fin=new Date(); fin.setDate(fin.getDate()+cfg.days);
+      const fmtDate=d=>d.toLocaleDateString('es-ES',{day:'numeric',month:'short'});
+      hero.innerHTML=`
+        <div class="plan-hero-tag">Plan actual</div>
+        <div class="plan-hero-name">Prueba gratuita</div>
+        <div class="plan-hero-desc">Acceso completo a todas las funciones · Sin límites · Sin tarjeta</div>
+        <div class="plan-hero-trial">
+          <div><div class="plan-trial-days">${cfg.days}</div><div class="plan-trial-label">días restantes</div></div>
+          <div class="plan-trial-bar">
+            <div class="plan-trial-bar-track"><div class="plan-trial-bar-fill" style="width:${pct}%"></div></div>
+            <div class="plan-trial-dates"><span>${fmtDate(inicio)}</span><span>${fmtDate(fin)}</span></div>
+          </div>
+        </div>
+        <button class="btn-upgrade-hero" onclick="abrirStripe('Pro','79')">⚡ Elegir un plan ahora · No perder el acceso</button>`;
+    }
+  }
+  // Upload section
+  renderUploadSection();
+}
+
+// ══ STRIPE ═══════════════════════════════════════════════════════════
+function abrirStripe(plan,price){
+  document.getElementById('stripePlanBadge').textContent=plan;
+  document.getElementById('stripePrice').textContent=price;
+  document.getElementById('stripeModal').classList.add('open');
+}
+function cerrarStripe(){document.getElementById('stripeModal').classList.remove('open');}
+function simularPago(){
+  cerrarStripe();
+  trialState='active'; daysLeft=30;
+  TRIAL_CONFIG.active.pill='✅ Plan Pro activo';
+  TRIAL_CONFIG.active.bannerMsg='Plan Pro activo · Documentos ilimitados · Todos los clientes';
+  renderTrialUI();
+  showToast('✅ ¡Plan activado! Bienvenida al Plan Pro','green');
+}
+function formatCard(el){let v=el.value.replace(/\D/g,'').substring(0,16);el.value=v.replace(/(.{4})/g,'$1 ').trim();}
+function formatExpiry(el){let v=el.value.replace(/\D/g,'').substring(0,4);if(v.length>2)v=v.slice(0,2)+' / '+v.slice(2);el.value=v;}
+
+// ══ HELPERS ══════════════════════════════════════════════════════════
+function fmtNum(n){return Number(n).toFixed(2).replace('.',',')+'€';}
+function exportarCSV(){const h=COLUMNS.filter(c=>c.key!=='_actions').map(c=>c.label).join(';');const r=docsData.map(d=>COLUMNS.filter(c=>c.key!=='_actions').map(c=>d[c.key]||'').join(';'));const csv=[h,...r].join('\n');const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='AsesorIA_documentos.csv';a.click();}
+function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className=`toast ${type} visible`;setTimeout(()=>t.classList.remove('visible'),3000);}
+
+// ══ NAV / AUTH ═══════════════════════════════════════════════════════
+const pageTitles={dashboard:['Dashboard','Resumen del trimestre · Q2 2024'],clientes:['Clientes','Empresas gestionadas'],documentos:['Documentos','Facturas, albaranes y nóminas'],informes:['Informes fiscales','Excel y modelos fiscales por cliente'],plan:['Mi plan','Prueba gratuita y planes de suscripción'],configuracion:['Configuración','Cuenta y preferencias']};
+
+function navTo(page,navEl){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  if(navEl)navEl.classList.add('active');
+  const[t,s]=pageTitles[page]||[page,''];
+  document.getElementById('page-title').textContent=t;
+  document.getElementById('page-sub').textContent=s;
+  if(page==='documentos'){renderTabla('docs-table-container',currentFilter);renderUploadSection();}
+  if(page==='dashboard')renderTabla('dash-table-container','todos',4);
+  if(page==='plan')renderTrialUI();
+}
+
+function doLogin(state){
+  trialState=state;
+  daysLeft={active:22,warning:5,expired:0}[state];
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('app-screen').style.display='block';
+  renderTrialUI();
+  renderTabla('dash-table-container','todos',4);
+  renderTabla('docs-table-container','todos');
+}
+
+function doLogout(){document.getElementById('app-screen').style.display='none';document.getElementById('auth-screen').style.display='flex';}
+function mostrarRegistro(){document.getElementById('loginCard').style.display='none';document.getElementById('registerCard').style.display='block';}
+function mostrarLogin(){document.getElementById('registerCard').style.display='none';document.getElementById('loginCard').style.display='block';}
+</script>
+</body>
+</html>
