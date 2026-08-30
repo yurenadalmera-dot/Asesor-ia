@@ -3,6 +3,8 @@ import { sb } from '../lib/supabase';
 import { useAuth } from '../lib/auth';
 import { AMBITOS } from '../lib/format';
 import { useToast } from '../components/ui';
+import SelectorArchivo from '../components/SelectorArchivo';
+import { subirJustificante } from '../lib/archivos';
 
 const VACIO = {
   tipo_doc: 'factura', tipo: 'gasto',
@@ -20,6 +22,7 @@ export default function Subir({ onNavegar }) {
   const [f, setF] = useState(VACIO);
   const [cliente, setCliente] = useState(null);
   const [espera, setEspera] = useState(false);
+  const [archivo, setArchivo] = useState(null);
 
   useEffect(() => {
     sb.from('clientes').select('id').eq('empresa_org_id', org.id).maybeSingle()
@@ -50,8 +53,18 @@ export default function Subir({ onNavegar }) {
     if (esNomina && !f.empleado) return avisar('Falta el nombre del empleado', 'amber');
     if (!esNomina && !f.emisor)  return avisar('Falta quién emite la factura', 'amber');
     if (!f.base && !f.salario_bruto) return avisar('Falta el importe', 'amber');
+    if (enviar && !archivo &&
+        !confirm('Vas a enviarlo sin adjuntar el justificante. Tu asesoría tendrá los datos, pero no el documento original. ¿Continuar?')) return;
 
     setEspera(true);
+
+    let adjunto = null;
+    if (archivo) {
+      const r = await subirJustificante(archivo, cliente);
+      if (r.error) { setEspera(false); return avisar(r.error, 'red'); }
+      adjunto = r;
+    }
+
     const fila = {
       organizacion_id: org.id,
       cliente_id: cliente,
@@ -60,6 +73,11 @@ export default function Subir({ onNavegar }) {
       tipo: esNomina ? 'gasto' : f.tipo,
       estado: enviar ? 'enviado' : 'borrador',
       canal: 'web',
+      archivo_path: adjunto?.path || null,
+      archivo_nombre: adjunto?.nombre || null,
+      archivo_mime: adjunto?.mime || null,
+      archivo_bytes: adjunto?.bytes || null,
+      archivo_hash: adjunto?.hash || null,
       num_referencia: esNomina ? (f.periodo || null) : (f.num_referencia || null),
       fecha: f.fecha || null,
       periodo: esNomina ? (f.periodo || null) : null,
@@ -86,6 +104,7 @@ export default function Subir({ onNavegar }) {
 
     avisar(enviar ? 'Enviado a tu asesoría' : 'Guardado como borrador', 'green');
     setF({ ...VACIO, tipo_doc: f.tipo_doc });
+    setArchivo(null);
     onNavegar('documentos');
   };
 
@@ -223,6 +242,9 @@ export default function Subir({ onNavegar }) {
               </div>
             </>
           )}
+
+          <SelectorArchivo archivo={archivo} onElegir={setArchivo}
+            clienteId={cliente} deshabilitado={trialExpirado} />
 
           <div style={{ display: 'flex', gap: '.5rem', marginTop: '.6rem' }}>
             <button className="btn" style={{ flex: 1 }} disabled={espera} onClick={() => guardar(false)}>
