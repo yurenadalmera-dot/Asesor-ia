@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { sb } from '../lib/supabase';
 import { eur, fechaES, fechaISO, ESTADOS_DOC, AMBITOS, TIPO_DOC } from '../lib/format';
 import { Tag, useToast, Vacio } from './ui';
+import { VerJustificante } from './SelectorArchivo';
 
 const COLS = [
   { k: 'num_referencia', l: 'Referencia', edit: true,  mono: true },
@@ -78,6 +79,7 @@ export default function TablaDocumentos({ docs, onCambio, soloLectura, modoRevis
           <tr>
             <th style={{ width: 30 }} />
             {COLS.map((c) => <th key={c.k} style={c.num ? { textAlign: 'right' } : undefined}>{c.l}</th>)}
+            <th style={{ width: 70 }}>Original</th>
             {modoRevision && !soloLectura && <th style={{ width: 150 }}>Revisión</th>}
           </tr>
         </thead>
@@ -134,6 +136,10 @@ export default function TablaDocumentos({ docs, onCambio, soloLectura, modoRevis
                     </td>
                   );
                 })}
+
+                <td onClick={(e) => e.stopPropagation()}>
+                  <VerJustificante path={d.archivo_path} nombre={d.archivo_nombre} />
+                </td>
 
                 {modoRevision && !soloLectura && (
                   <td>
