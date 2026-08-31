@@ -16,3 +16,4 @@
     "vite": "^5.4.8"
   }
 }
+"@supabase/supabase-js": "^2.0.0"
