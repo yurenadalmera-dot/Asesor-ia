@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "build": "vite build",
-    "prestart": "vite build || echo 'AVISO: el build de Vite ha fallado, se servira publico/'",
+    "postinstall": "vite build || echo 'AVISO: el build de Vite ha fallado, se servira publico/'",
     "start": "node server.js"
   },
   "engines": { "node": ">=18" },
